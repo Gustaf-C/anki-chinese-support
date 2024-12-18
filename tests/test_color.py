@@ -35,6 +35,19 @@ class TestColorize(Base):
             '<span class="tone4">xiàn</span> <span class="tone4">zài</span>',
         )
 
+    def test_uppercase(self):
+        self.assertEqual(
+            colorize(['Wǒ', 'shì']),
+            '<span class="tone3">Wǒ</span> <span class="tone4">shì</span>',
+        )
+        self.assertEqual(
+            colorize(['我[Wǒ]'], ruby_whole=True),
+            '<span class="tone3">我[wǒ]</span>',
+        )
+        self.assertEqual(
+            colorize(['我[Wǒ]']), '我[<span class="tone3">wǒ</span>]'
+        )
+
     def test_ruby(self):
         self.assertEqual(
             colorize(['你[nǐ]']), '你[<span class="tone3">nǐ</span>]'
