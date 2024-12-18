@@ -60,14 +60,16 @@ def colorize(words, target='pinyin', ruby_whole=False):
             pattern = d[target]
             text = ''
             for syllable in word.split():
-                if search(f'^{pattern}$', syllable):
-                    text += sub(f'^{pattern}$', _repl, syllable, IGNORECASE)
+                if search(f'^{pattern}$', syllable, flags=IGNORECASE):
+                    text += sub(f'^{pattern}$', _repl, syllable, flags=IGNORECASE)
                 elif has_ruby(syllable):
                     if ruby_whole:
                         pattern = RUBY_REGEX
                     else:
                         pattern = HALF_RUBY_REGEX
-                    text += sub(pattern, _repl, syllable, IGNORECASE)
+                    # For some reason HALF_RUBY_REGEX is case-insensitive per se, and RUBY_REGEX is case-sensitive
+                    # And for ruby we do not need to keep uppercase
+                    text += sub(pattern, _repl, syllable, flags=IGNORECASE).lower()
                 else:
                     text += f'<span class="tone5">{syllable}</span>'
         else:
