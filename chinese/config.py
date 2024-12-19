@@ -26,17 +26,15 @@ from aqt import mw
 
 
 class ConfigManager:
-    default_path = join(dirname(realpath(__file__)), 'config.json')
-    saved_path = join(dirname(realpath(__file__)), 'config_saved.json')
+    def __init__(self):
+        self._load_config()
+        mw.addonManager.setConfigUpdatedAction(__name__, lambda *_: self._config_updated_handler())
 
-    with open(default_path, encoding='utf-8') as f:
-        config = defaultdict(str, load(f))
+    def _load_config(self):
+        self.config = mw.addonManager.getConfig(__name__)
 
-    if exists(saved_path):
-        with open(saved_path, encoding='utf-8') as f:
-            config_saved = defaultdict(str, load(f))
-        if config_saved['version'] == config['version']:
-            config = config_saved
+    def _config_updated_handler(self):
+        self._load_config()
 
     def __setitem__(self, key, value):
         self.config[key] = value
@@ -48,8 +46,6 @@ class ConfigManager:
         self.config.update(d)
 
     def save(self):
-        with open(self.saved_path, 'w', encoding='utf-8') as f:
-            dump(self.config, f)
         mw.addonManager.writeConfig(__name__, self.config)
 
     def get_fields(self, groups=None):
