@@ -18,8 +18,10 @@
 from hypothesis import given
 from hypothesis.strategies import integers
 
+import chinese.config
 from chinese.color import colorize, colorize_dict, colorize_fuse
-from tests import Base
+from tests import Base, config
+from unittest.mock import MagicMock, Mock, patch
 
 
 class TestColorize(Base):
@@ -56,6 +58,25 @@ class TestColorize(Base):
             colorize(['你[nǐ]'], ruby_whole=True),
             '<span class="tone3">你[nǐ]</span>',
         )
+
+    def test_lowercase_ruby(self):
+        with patch("chinese.color.config") as mconf:
+            mconf.config = config
+            mconf.get_config_scalar_value = lambda kv: \
+                chinese.config.ConfigManager.get_config_scalar_value(mconf, kv)
+
+            config['lowercase_ruby'] = True
+            self.assertEqual(
+                colorize(['你[Nǐ]']), '你[<span class="tone3">nǐ</span>]'
+            )
+            config['lowercase_ruby'] = False
+            self.assertEqual(
+                colorize(['你[Nǐ]']), '你[<span class="tone3">Nǐ</span>]'
+            )
+            config.pop('lowercase_ruby', None)
+            self.assertEqual(
+                colorize(['你[Nǐ]']), '你[<span class="tone3">Nǐ</span>]'
+            )
 
     def test_bopomofo(self):
         self.assertEqual(

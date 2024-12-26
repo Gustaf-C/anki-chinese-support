@@ -32,6 +32,7 @@ from .hanzi import split_hanzi
 from .sound import extract_tags
 from .transcribe import tone_number, sanitize_transcript
 from .util import align, is_punc, no_color
+from .main import config
 
 
 def colorize(words, target='pinyin', ruby_whole=False):
@@ -69,7 +70,10 @@ def colorize(words, target='pinyin', ruby_whole=False):
                         pattern = HALF_RUBY_REGEX
                     # For some reason HALF_RUBY_REGEX is case-insensitive per se, and RUBY_REGEX is case-sensitive
                     # And for ruby we do not need to keep uppercase
-                    text += sub(pattern, _repl, syllable, flags=IGNORECASE).lower()
+                    ruby = sub(pattern, _repl, syllable, flags=IGNORECASE)
+                    if config.get_config_scalar_value('lowercase_ruby'):
+                        ruby = ruby.lower()
+                    text += ruby
                 else:
                     text += f'<span class="tone5">{syllable}</span>'
         else:
