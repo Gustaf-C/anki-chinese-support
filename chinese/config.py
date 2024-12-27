@@ -27,25 +27,38 @@ from aqt import mw
 from aqt.utils import showInfo
 
 
+def _get_old_addon_config_file() -> Path:
+    apath = Path(mw.pm.addonFolder())
+    # This is mainly for tests, since 'current-module-dir is mocked, but we cannot mock/patch this function,
+    #  it is called at the import time, by main.py, ugh
+    if exists(apath):
+        ret = apath.resolve(strict=True) / '1752008591/config_saved.json'
+    else:
+        ret = None
+
+    return ret
+
+
 class ConfigManager:
-    # Path of the old 'Chinese Support 3' user config
-    _saved_path = Path(mw.pm.addonFolder()).resolve(strict=True) / '1752008591/config_saved.json'
 
     def __init__(self):
         self._load_config()
         mw.addonManager.setConfigUpdatedAction(__name__, lambda *_: self._config_updated_handler())
 
-        if self.config['firstRun'] and self._saved_path.is_file():
-            # Old MacDonald had a farm. E-I-E-I-O.
-            with open(self._saved_path, 'r', encoding='utf-8') as f:
-                config_saved = defaultdict(str, load(f))
-                for k in ['enabledModels', 'speech', 'target', 'max_examples', 'fields']:
-                    self.config[k] = config_saved[k]
-            showInfo( 'Configuration from the old "Chinese Support 3" was imported.\n\n'
-                      'This is a one-time post install action, if you update the configuration in the original addon, '
-                      'it will not be synchronized.\n\n'
-                      'It is recommended to disable the old addon.')
-            self.save()
+        if self.config['firstRun']:
+            spath = _get_old_addon_config_file()
+
+            if spath and spath.is_file():
+                # Old MacDonald had a farm. E-I-E-I-O.
+                with open(spath, 'r', encoding='utf-8') as f:
+                    config_saved = defaultdict(str, load(f))
+                    for k in ['enabledModels', 'speech', 'target', 'max_examples', 'fields']:
+                        self.config[k] = config_saved[k]
+                showInfo( 'Configuration from the old "Chinese Support 3" was imported.\n\n'
+                          'This is a one-time post install action, if you update the configuration in the original addon, '
+                          'it will not be synchronized.\n\n'
+                          'It is recommended to disable the old addon.')
+                self.save()
 
 
     def _load_config(self):
