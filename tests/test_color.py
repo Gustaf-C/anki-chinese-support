@@ -65,6 +65,8 @@ class TestColorize(Base):
             mconf.get_config_scalar_value = lambda kv: \
                 chinese.config.ConfigManager.get_config_scalar_value(mconf, kv)
 
+            _lowercase_ruby = config['lowercase_ruby']
+
             config['lowercase_ruby'] = True
             self.assertEqual(
                 colorize(['你[Nǐ]']), '你[<span class="tone3">nǐ</span>]'
@@ -77,6 +79,8 @@ class TestColorize(Base):
             self.assertEqual(
                 colorize(['你[Nǐ]']), '你[<span class="tone3">Nǐ</span>]'
             )
+            # We need to restore it since test_uppercase() depends on it
+            config['lowercase_ruby'] = _lowercase_ruby
 
     def test_bopomofo(self):
         self.assertEqual(
